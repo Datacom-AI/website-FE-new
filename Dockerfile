@@ -1,30 +1,21 @@
-# Build stage
-FROM node:20-alpine as build
+# 1: build app Vite
+FROM node:20 AS builder
 
 WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy source code
 COPY . .
 
-# Build the app
+# env  build
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
+RUN npm install
 RUN npm run build
 
-# Production stage
+#  2: serve  Nginx
 FROM nginx:alpine
 
-# Copy built assets from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration
+# Copy config nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"] 
+# Copy output Vite đã build
+COPY --from=builder /app/dist /usr/share/nginx/html
