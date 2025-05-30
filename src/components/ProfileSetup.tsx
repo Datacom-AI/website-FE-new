@@ -254,7 +254,10 @@ const ProfileSetup = () => {
 
       toast({
         title: t("complete-setup-title", "Profile Setup Complete"),
-        description: t("complete-setup-desc", "Your profile has been set up successfully."),
+        description: t(
+          "complete-setup-desc",
+          "Your profile has been set up successfully."
+        ),
       });
 
       setCurrentStep("complete");
@@ -270,7 +273,10 @@ const ProfileSetup = () => {
         description:
           error instanceof Error
             ? `Error: ${error.message}`
-            : t("setup-failed-desc", "There was a problem setting up your profile. Please try again."),
+            : t(
+                "setup-failed-desc",
+                "There was a problem setting up your profile. Please try again."
+              ),
         variant: "destructive",
       });
     } finally {
@@ -2245,11 +2251,17 @@ const ProfileSetup = () => {
                 {accountType
                   ? t(
                       "redirecting-message-with-role",
-                      t("redirecting-message-with-role-desc", `You will be redirected to your ${accountType} dashboard in a few seconds...`)
+                      t(
+                        "redirecting-message-with-role-desc",
+                        `You will be redirected to your ${accountType} dashboard in a few seconds...`
+                      )
                     )
                   : t(
                       "redirecting-message",
-                      t("redirecting-message-desc", "You will be redirected to the dashboard in a few seconds...")
+                      t(
+                        "redirecting-message-desc",
+                        "You will be redirected to the dashboard in a few seconds..."
+                      )
                     )}
               </p>
             </CardContent>
@@ -2262,10 +2274,13 @@ const ProfileSetup = () => {
               navigate(dashboardUrl);
             }}
           >
-            {accountTypeDisplay 
+            {accountTypeDisplay
               ? t(
                   "goto-role-dashboard",
-                  t("goto-role-dashboard-desc", `Go to ${accountTypeDisplay} Dashboard Now`)
+                  t(
+                    "goto-role-dashboard-desc",
+                    `Go to ${accountTypeDisplay} Dashboard Now`
+                  )
                 )
               : t("goto-dashboard", "Go to Dashboard Now")}
           </Button>

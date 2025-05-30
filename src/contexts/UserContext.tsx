@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 
 export type UserRole = "manufacturer" | "brand" | "retailer";
 
@@ -55,19 +61,30 @@ interface UserContextType {
   isAuthenticated: boolean;
   user: UserData | null;
   login: (email: string, password: string, role?: UserRole) => Promise<void>;
-  register: (userData: Omit<UserData, "id" | "profileComplete" | "createdAt" | "lastLogin" | "notifications"> & { password: string }) => Promise<void>;
+  register: (
+    userData: Omit<
+      UserData,
+      "id" | "profileComplete" | "createdAt" | "lastLogin" | "notifications"
+    > & { password: string }
+  ) => Promise<void>;
   logout: () => void;
   switchRole: (newRole: UserRole) => void;
   updateUserProfile: (updatedData: Partial<UserData>) => void;
-  updateRoleSettings: <T extends ManufacturerSettings | BrandSettings | RetailerSettings>(settings: Partial<T>) => void;
+  updateRoleSettings: <
+    T extends ManufacturerSettings | BrandSettings | RetailerSettings
+  >(
+    settings: Partial<T>
+  ) => void;
   updateUserStatus: (status: "online" | "away" | "busy") => void;
   updateUserAvatar: (avatarUrl: string) => void;
   verifyEmail: (email: string, verificationCode: string) => Promise<void>;
   resendVerificationEmail: (email: string) => Promise<void>;
-  updateProfile: (profileData: any) => Promise<void>;
+  updateProfile: (profileData) => Promise<void>;
 }
 
-export const UserContext = createContext<UserContextType | undefined>(undefined);
+export const UserContext = createContext<UserContextType>(
+  {} as UserContextType
+);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -85,27 +102,31 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = async (email: string, password: string, selectedRole?: UserRole): Promise<void> => {
+  const login = async (
+    email: string,
+    password: string,
+    selectedRole?: UserRole
+  ): Promise<void> => {
     // In a real app, this would make an API call to authenticate
     // For now, we'll simulate a successful login
-    
+
     // Use the provided role or default to manufacturer
     const roleToUse = selectedRole || "manufacturer";
-    
+
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // Create mock role-specific settings based on the role
     let roleSpecificSettings = {};
-    
+
     if (roleToUse === "manufacturer") {
       roleSpecificSettings = {
         manufacturerSettings: {
           productionCapacity: 50000,
           certifications: ["ISO 9001", "Organic", "Fair Trade"],
           preferredCategories: ["Food", "Beverage", "Personal Care"],
-          minimumOrderValue: 10000
-        }
+          minimumOrderValue: 10000,
+        },
       };
     } else if (roleToUse === "brand") {
       roleSpecificSettings = {
@@ -113,20 +134,33 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           marketSegments: ["Health-conscious", "Eco-friendly", "Premium"],
           brandValues: ["Sustainability", "Quality", "Innovation"],
           targetDemographics: ["Millennials", "Gen Z", "Health enthusiasts"],
-          productCategories: ["Organic Foods", "Wellness", "Eco-friendly products"]
-        }
+          productCategories: [
+            "Organic Foods",
+            "Wellness",
+            "Eco-friendly products",
+          ],
+        },
       };
     } else if (roleToUse === "retailer") {
       roleSpecificSettings = {
         retailerSettings: {
           storeLocations: 12,
           averageOrderValue: 75,
-          customerBase: ["Urban professionals", "Health-conscious families", "Millennials"],
-          preferredCategories: ["Organic", "Local", "Sustainable", "Health food"]
-        }
+          customerBase: [
+            "Urban professionals",
+            "Health-conscious families",
+            "Millennials",
+          ],
+          preferredCategories: [
+            "Organic",
+            "Local",
+            "Sustainable",
+            "Health food",
+          ],
+        },
       };
     }
-    
+
     // Create mock user data
     const userData: UserData = {
       id: Math.random().toString(36).substr(2, 9),
@@ -140,36 +174,41 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       notifications: Math.floor(Math.random() * 10),
       avatar: "", // In a real app, this would come from the API
       status: "online", // In a real app, this would come from the API
-      ...roleSpecificSettings
+      ...roleSpecificSettings,
     };
-    
+
     // Save to localStorage for persistence
     localStorage.setItem("user", JSON.stringify(userData));
-    
+
     // Update state
     setUser(userData);
     setRole(roleToUse);
     setIsAuthenticated(true);
   };
 
-  const register = async (userData: Omit<UserData, "id" | "profileComplete" | "createdAt" | "lastLogin" | "notifications"> & { password: string }): Promise<void> => {
+  const register = async (
+    userData: Omit<
+      UserData,
+      "id" | "profileComplete" | "createdAt" | "lastLogin" | "notifications"
+    > & { password: string }
+  ): Promise<void> => {
     // In a real app, this would make an API call to register the user
     // For now, we'll simulate a successful registration
-    
+
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // Create role-specific settings based on the role
     let roleSpecificSettings = {};
-    
+
     if (userData.role === "manufacturer") {
       roleSpecificSettings = {
         manufacturerSettings: {
           productionCapacity: 0,
           certifications: [],
           preferredCategories: [],
-          minimumOrderValue: 0
-        }
+          minimumOrderValue: 0,
+        },
       };
     } else if (userData.role === "brand") {
       roleSpecificSettings = {
@@ -177,8 +216,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           marketSegments: [],
           brandValues: [],
           targetDemographics: [],
-          productCategories: []
-        }
+          productCategories: [],
+        },
       };
     } else if (userData.role === "retailer") {
       roleSpecificSettings = {
@@ -186,11 +225,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           storeLocations: 0,
           averageOrderValue: 0,
           customerBase: [],
-          preferredCategories: []
-        }
+          preferredCategories: [],
+        },
       };
     }
-    
+
     // Create user with random ID and default values
     const newUser: UserData = {
       ...userData,
@@ -201,15 +240,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       notifications: 0,
       avatar: "", // In a real app, this would come from the API
       status: "online", // In a real app, this would come from the API
-      ...roleSpecificSettings
+      ...roleSpecificSettings,
     };
-    
+
     // Omit password before storing in state
     const { password, ...userWithoutPassword } = userData;
-    
+
     // Save to localStorage for persistence
     localStorage.setItem("user", JSON.stringify(newUser));
-    
+
     // Update state
     setUser(newUser);
     setRole(newUser.role);
@@ -219,7 +258,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const logout = (): void => {
     // Clear local storage
     localStorage.removeItem("user");
-    
+
     // Reset state
     setUser(null);
     setIsAuthenticated(false);
@@ -230,12 +269,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       // Update user with new role
       const updatedUser = {
         ...user,
-        role: newRole
+        role: newRole,
       };
-      
+
       // Save to localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      
+
       // Update state
       setUser(updatedUser);
       setRole(newRole);
@@ -248,58 +287,62 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const updatedUser = {
         ...user,
         ...updatedData,
-        lastLogin: new Date().toISOString()
+        lastLogin: new Date().toISOString(),
       };
-      
+
       // Save to localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      
+
       // Update state
       setUser(updatedUser);
     }
   };
 
-  const updateRoleSettings = <T extends ManufacturerSettings | BrandSettings | RetailerSettings>(settings: Partial<T>): void => {
+  const updateRoleSettings = <
+    T extends ManufacturerSettings | BrandSettings | RetailerSettings
+  >(
+    settings: Partial<T>
+  ): void => {
     if (user) {
       let updatedUser;
-      
+
       // Update appropriate settings based on role
       if (role === "manufacturer" && user.manufacturerSettings) {
         updatedUser = {
           ...user,
           manufacturerSettings: {
             ...user.manufacturerSettings,
-            ...settings
-          }
+            ...settings,
+          },
         };
       } else if (role === "brand" && user.brandSettings) {
         updatedUser = {
           ...user,
           brandSettings: {
             ...user.brandSettings,
-            ...settings
-          }
+            ...settings,
+          },
         };
       } else if (role === "retailer" && user.retailerSettings) {
         updatedUser = {
           ...user,
           retailerSettings: {
             ...user.retailerSettings,
-            ...settings
-          }
+            ...settings,
+          },
         };
       } else {
         // If settings don't exist yet, create them
         const settingsKey = `${role}Settings` as keyof UserData;
         updatedUser = {
           ...user,
-          [settingsKey]: settings
+          [settingsKey]: settings,
         };
       }
-      
+
       // Save to localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      
+
       // Update state
       setUser(updatedUser);
     }
@@ -310,12 +353,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       // Update user status
       const updatedUser = {
         ...user,
-        status: status
+        status: status,
       };
-      
+
       // Save to localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      
+
       // Update state
       setUser(updatedUser);
     }
@@ -326,42 +369,45 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       // Update user avatar
       const updatedUser = {
         ...user,
-        avatar: avatarUrl
+        avatar: avatarUrl,
       };
-      
+
       // Save to localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      
+
       // Update state
       setUser(updatedUser);
     }
   };
 
-  const verifyEmail = async (email: string, verificationCode: string): Promise<void> => {
+  const verifyEmail = async (
+    email: string,
+    verificationCode: string
+  ): Promise<void> => {
     // In a real app, this would make an API call to verify the email
     // For now, we'll simulate successful verification
-    
+
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // Verify hard-coded verification code for demo purposes
     if (verificationCode !== "123456") {
       throw new Error("Invalid verification code");
     }
-    
+
     // If we got here, verification was successful
     // In a real app, we would update the user's email verification status in the backend
-    
+
     if (user) {
       // Update user to mark email as verified
       const updatedUser = {
         ...user,
         emailVerified: true,
       };
-      
+
       // Save to localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      
+
       // Update state
       setUser(updatedUser);
     }
@@ -370,23 +416,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const resendVerificationEmail = async (email: string): Promise<void> => {
     // In a real app, this would make an API call to resend the verification email
     // For now, we'll simulate a successful resend
-    
+
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // In a real app, we would trigger an email sending from the backend
     console.log(`Verification email resent to ${email}`);
-    
+
     // Nothing to update in the state for this operation
   };
 
-  const updateProfile = async (profileData: any): Promise<void> => {
+  const updateProfile = async (profileData): Promise<void> => {
     // In a real app, this would make an API call to update the user's profile
     // For now, we'll simulate a successful profile update
-    
+
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     if (user) {
       // Update user with the new profile data
       const updatedUser = {
@@ -395,13 +441,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         profileComplete: true,
         lastUpdated: new Date().toISOString(),
       };
-      
+
       // Save to localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      
+
       // Update state
       setUser(updatedUser);
-      
+
       // If role was updated, update the role state as well
       if (profileData.role && profileData.role !== user.role) {
         setRole(profileData.role);
@@ -410,13 +456,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <UserContext.Provider 
-      value={{ 
+    <UserContext.Provider
+      value={{
         role,
-        isAuthenticated, 
-        user, 
-        login, 
-        register, 
+        isAuthenticated,
+        user,
+        login,
+        register,
         logout,
         switchRole,
         updateUserProfile,
@@ -425,7 +471,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         updateUserAvatar,
         verifyEmail,
         resendVerificationEmail,
-        updateProfile
+        updateProfile,
       }}
     >
       {children}

@@ -23,6 +23,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Factory, ShoppingBag, Store } from "lucide-react";
+import { useSignIn } from "@clerk/clerk-react";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -39,6 +40,7 @@ const SignInForm = () => {
   const { toast } = useToast();
   const { login } = useUser();
   const navigate = useNavigate();
+  const { signIn, isLoaded } = useSignIn();
 
   // Form schema
   const formSchema = z.object({
@@ -60,7 +62,7 @@ const SignInForm = () => {
     defaultValues: {
       email: "",
       password: "",
-      accountType: "manufacturer",
+      accountType: "manufacturer", // manufacturer by default
     },
   });
 
@@ -93,16 +95,22 @@ const SignInForm = () => {
 
   // Social login handlers
   const handleGoogleSignIn = async () => {
+    if (!isLoaded) return;
+
     try {
       // Implement Google OAuth
-      toast({
-        title: "Google Sign In",
-        description: "Google authentication will be implemented here.",
+
+      // ! check this part, it might need adjustment
+      await signIn.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: `${window.location.origin}/oauth-callback`,
+        redirectUrlComplete: `${window.location.origin}/profile-setup`,
       });
     } catch (error) {
+      console.error("Google sign in error:", error);
       toast({
-        title: "Authentication failed",
-        description: "Could not sign in with Google.",
+        title: t("auth-failed", "Authentication failed"),
+        description: t("google-signin-error", "Could not sign in with Google."),
         variant: "destructive",
       });
     }
@@ -125,16 +133,22 @@ const SignInForm = () => {
   };
 
   const handleOutlookSignIn = async () => {
+    if (!isLoaded) return;
+
     try {
-      // Implement Outlook OAuth
-      toast({
-        title: "Outlook Sign In",
-        description: "Outlook authentication will be implemented here.",
+      await signIn.authenticateWithRedirect({
+        strategy: "oauth_microsoft",
+        redirectUrl: "/profile-setup",
+        redirectUrlComplete: "/profile-setup",
       });
     } catch (error) {
+      console.error("Outlook sign in error:", error);
       toast({
-        title: "Authentication failed",
-        description: "Could not sign in with Outlook.",
+        title: t("auth-failed", "Authentication failed"),
+        description: t(
+          "outlook-signin-error",
+          "Could not sign in with Outlook."
+        ),
         variant: "destructive",
       });
     }
