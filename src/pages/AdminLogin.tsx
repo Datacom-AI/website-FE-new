@@ -1,33 +1,43 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ChevronRight, Shield, Lock, Mail, AlertCircle } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ChevronRight, Shield, Lock, Mail, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     // Simple admin authentication
     setTimeout(() => {
-      if (email === 'admin@admin.com' && password === 'admin') {
+      if (email === "admin@admin.com" && password === "admin") {
         // Set admin session
-        localStorage.setItem('adminAuth', 'true');
-        localStorage.setItem('adminUser', JSON.stringify({ email, role: 'admin' }));
-        navigate('/admin/dashboard');
+        localStorage.setItem("adminAuth", "true");
+        localStorage.setItem(
+          "adminUser",
+          JSON.stringify({ email, role: "admin" })
+        );
+        navigate("/admin/dashboard");
       } else {
-        setError('Invalid email or password');
+        setError("Invalid email or password");
       }
       setIsLoading(false);
     }, 1000); // Simulate API call
@@ -45,11 +55,11 @@ const AdminLogin = () => {
           <motion.div
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
-            transition={{ 
+            transition={{
               type: "spring",
               stiffness: 260,
               damping: 20,
-              delay: 0.1 
+              delay: 0.1,
             }}
             className="inline-block mb-2"
           >
@@ -63,7 +73,9 @@ const AdminLogin = () => {
             transition={{ delay: 0.2, duration: 0.4 }}
           >
             <h1 className="text-2xl font-bold text-white mb-1">Admin Portal</h1>
-            <p className="text-gray-400">Access the system management interface</p>
+            <p className="text-gray-400">
+              Access the system management interface
+            </p>
           </motion.div>
         </div>
 
@@ -75,13 +87,17 @@ const AdminLogin = () => {
           <Card className="border-0 shadow-xl bg-black/30 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-xl text-white">Admin Login</CardTitle>
-              <CardDescription>Enter your credentials to continue</CardDescription>
+              <CardDescription>
+                Enter your credentials to continue
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin}>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-white">Email</Label>
+                    <Label htmlFor="email" className="text-white">
+                      Email
+                    </Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
                       <Input
@@ -96,7 +112,9 @@ const AdminLogin = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-white">Password</Label>
+                    <Label htmlFor="password" className="text-white">
+                      Password
+                    </Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
                       <Input
@@ -123,15 +141,19 @@ const AdminLogin = () => {
                   )}
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full mt-6 bg-primary hover:bg-primary/90 text-white" 
+                <Button
+                  type="submit"
+                  className="w-full mt-6 bg-primary hover:bg-primary/90 text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                       className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                     />
                   ) : (
@@ -145,7 +167,11 @@ const AdminLogin = () => {
             </CardContent>
             <CardFooter className="flex justify-center border-t border-gray-800 pt-4">
               <p className="text-sm text-gray-500">
-                Management access only. For regular login, <a href="/login" className="text-primary hover:underline">click here</a>.
+                Management access only. For regular login,{" "}
+                <a href="/login" className="text-primary hover:underline">
+                  click here
+                </a>
+                .
               </p>
             </CardFooter>
           </Card>
@@ -155,4 +181,4 @@ const AdminLogin = () => {
   );
 };
 
-export default AdminLogin; 
+export default AdminLogin;

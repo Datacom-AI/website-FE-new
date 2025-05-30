@@ -9,20 +9,62 @@ import Footer from "@/components/Footer";
 import AnimatedTitle from "@/components/ui/animated-title";
 import { Users, ShieldCheck, Globe2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "@/hooks/use-toast";
+import { useClerk } from "@clerk/clerk-react";
 
 const Auth = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [isRegister, setIsRegister] = useState(searchParams.get("type") === "register");
+  const [isRegister, setIsRegister] = useState(
+    searchParams.get("type") === "register"
+  );
   const { isAuthenticated } = useUser();
+  const { handleRedirectCallback } = useClerk();
+
+  // Handle OAuth redirects
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      // Check if this is an OAuth callback
+      if (window.location.search.includes("__clerk_status=")) {
+        try {
+          await handleRedirectCallback({
+            signUpFallbackRedirectUrl: "/profile-setup",
+          });
+
+          // Determine redirect based on whether user needs onboarding
+          const needsOnboarding = !localStorage.getItem("profileComplete");
+          if (needsOnboarding) {
+            navigate("/profile-setup", { replace: true });
+          } else {
+            navigate("/dashboard", { replace: true });
+          }
+        } catch (error) {
+          console.error("OAuth callback error:", error);
+          toast({
+            title: t("auth-failed", "Authentication failed"),
+            description: t(
+              "oauth-error",
+              "There was an error with social authentication."
+            ),
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    handleOAuthCallback();
+  }, [handleRedirectCallback, navigate, t]);
 
   // Redirect to the proper URL if needed
   useEffect(() => {
-    if (searchParams.get("type") !== "signin" && searchParams.get("type") !== "register") {
+    if (
+      searchParams.get("type") !== "signin" &&
+      searchParams.get("type") !== "register"
+    ) {
       navigate("/auth?type=signin", { replace: true });
     }
-    
+
     // If user is already authenticated, redirect to dashboard
     if (isAuthenticated) {
       navigate("/dashboard");
@@ -31,7 +73,9 @@ const Auth = () => {
 
   // Page title effect
   useEffect(() => {
-    document.title = isRegister ? t('register-title', "Register - CPG Matchmaker") : t('sign-in-title', "Sign In - CPG Matchmaker");
+    document.title = isRegister
+      ? t("register-title", "Register - CPG Matchmaker")
+      : t("sign-in-title", "Sign In - CPG Matchmaker");
   }, [isRegister, t]);
 
   useEffect(() => {
@@ -41,39 +85,49 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       <Navbar />
-      
+
       <div className="flex-grow pt-16 pb-12 flex flex-col items-center justify-start relative overflow-x-hidden">
         {/* Background blur circles */}
         <div className="absolute top-40 -left-40 w-80 h-80 bg-primary/30 rounded-full filter blur-3xl opacity-30 animate-pulse-slow" />
         <div className="absolute bottom-20 -right-40 w-80 h-80 bg-accent/30 rounded-full filter blur-3xl opacity-30 animate-pulse-slow" />
-        
+
         <div className="container mx-auto px-4">
           {/* Main Title Section */}
           <div className="mb-16">
             <AnimatedTitle
-              title={isRegister ? t('join-platform', "Join Our Platform") : t('welcome-back', "Welcome Back!")}
+              title={
+                isRegister
+                  ? t("join-platform", "Join Our Platform")
+                  : t("welcome-back", "Welcome Back!")
+              }
               subtitle={
                 isRegister
-                  ? t('create-account-description', "Create your account and start connecting with CPG industry professionals")
-                  : t('sign-in-description', "Sign in to your account and continue your journey")
+                  ? t(
+                      "create-account-description",
+                      "Create your account and start connecting with CPG industry professionals"
+                    )
+                  : t(
+                      "sign-in-description",
+                      "Sign in to your account and continue your journey"
+                    )
               }
               size="xl"
               className="relative z-10"
             />
-            </div>
-            
+          </div>
+
           {/* Content Grid */}
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-start">
             {/* Illustration Section */}
             <div className="order-1">
-              <motion.div 
+              <motion.div
                 className="h-[400px] w-full relative rounded-2xl overflow-hidden shadow-xl"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 {/* Modern Abstract Background */}
-                <div 
+                <div
                   className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5"
                   style={{
                     backgroundImage: `
@@ -81,174 +135,177 @@ const Auth = () => {
                       radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
                       radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 60%),
                       linear-gradient(45deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)
-                    `
+                    `,
                   }}
                 />
 
                 {/* Center Icon */}
-                <motion.div 
+                <motion.div
                   className="absolute top-1/2 left-1/2 w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 shadow-xl flex items-center justify-center backdrop-blur-sm z-10"
-                  animate={{ 
+                  animate={{
                     scale: [1, 1.1, 1],
                     rotate: [0, 360],
                   }}
-                  transition={{ 
+                  transition={{
                     scale: {
                       duration: 4,
                       repeat: Infinity,
-                      ease: "easeInOut"
+                      ease: "easeInOut",
                     },
                     rotate: {
                       duration: 20,
                       repeat: Infinity,
-                      ease: "linear"
-                    }
+                      ease: "linear",
+                    },
                   }}
                 >
                   <span className="text-2xl">📦</span>
                 </motion.div>
 
                 {/* Top Icon */}
-                <motion.div 
+                <motion.div
                   className="absolute top-[15%] left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center backdrop-blur-sm"
-                  animate={{ 
+                  animate={{
                     y: [0, -10, 0],
-                    scale: [1, 1.1, 1]
+                    scale: [1, 1.1, 1],
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 4,
                     repeat: Infinity,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 >
                   <span className="text-xl">💄</span>
                 </motion.div>
 
                 {/* Right Icon */}
-                <motion.div 
+                <motion.div
                   className="absolute top-1/2 right-[15%] -translate-y-1/2 w-14 h-14 rounded-full bg-white/90 shadow-lg flex items-center justify-center backdrop-blur-sm"
-                  animate={{ 
+                  animate={{
                     x: [0, 10, 0],
-                    scale: [1, 1.08, 1]
+                    scale: [1, 1.08, 1],
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 4.5,
                     repeat: Infinity,
                     delay: 0.5,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 >
                   <span className="text-2xl">🥤</span>
                 </motion.div>
 
                 {/* Bottom Icon */}
-                <motion.div 
+                <motion.div
                   className="absolute bottom-[15%] left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center backdrop-blur-sm"
-                  animate={{ 
+                  animate={{
                     y: [0, 10, 0],
-                    scale: [1, 1.12, 1]
+                    scale: [1, 1.12, 1],
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 4.8,
                     repeat: Infinity,
                     delay: 1,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 >
                   <span className="text-xl">🧴</span>
                 </motion.div>
 
                 {/* Left Icon */}
-                <motion.div 
+                <motion.div
                   className="absolute top-1/2 left-[15%] -translate-y-1/2 w-13 h-13 rounded-full bg-white/90 shadow-lg flex items-center justify-center backdrop-blur-sm"
-                  animate={{ 
+                  animate={{
                     x: [0, -10, 0],
-                    scale: [1, 1.15, 1]
+                    scale: [1, 1.15, 1],
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 5.2,
                     repeat: Infinity,
                     delay: 1.5,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 >
                   <span className="text-xl">🍿</span>
                 </motion.div>
 
                 {/* Top Right Icon */}
-                <motion.div 
+                <motion.div
                   className="absolute top-[25%] right-[25%] w-11 h-11 rounded-full bg-white/90 shadow-lg flex items-center justify-center backdrop-blur-sm"
-                  animate={{ 
+                  animate={{
                     y: [0, -8, 0],
                     x: [0, 8, 0],
-                    scale: [1, 1.08, 1]
+                    scale: [1, 1.08, 1],
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 4.2,
                     repeat: Infinity,
                     delay: 0.8,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 >
                   <span className="text-lg">🧃</span>
                 </motion.div>
 
                 {/* Bottom Right Icon */}
-                <motion.div 
+                <motion.div
                   className="absolute bottom-[25%] right-[25%] w-12 h-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center backdrop-blur-sm"
-                  animate={{ 
+                  animate={{
                     y: [0, 8, 0],
                     x: [0, 8, 0],
-                    scale: [1, 1.1, 1]
+                    scale: [1, 1.1, 1],
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 4.5,
                     repeat: Infinity,
                     delay: 1.2,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 >
                   <span className="text-xl">💊</span>
                 </motion.div>
-                
+
                 {/* Bottom Left Icon */}
-                <motion.div 
+                <motion.div
                   className="absolute bottom-[25%] left-[25%] w-12 h-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center backdrop-blur-sm"
-                  animate={{ 
+                  animate={{
                     y: [0, 8, 0],
                     x: [0, -8, 0],
-                    scale: [1, 1.12, 1]
+                    scale: [1, 1.12, 1],
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 4.8,
                     repeat: Infinity,
                     delay: 1.8,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 >
                   <span className="text-xl">🧼</span>
                 </motion.div>
-                
+
                 {/* Top Left Icon */}
-                <motion.div 
+                <motion.div
                   className="absolute top-[25%] left-[25%] w-11 h-11 rounded-full bg-white/90 shadow-lg flex items-center justify-center backdrop-blur-sm"
-                  animate={{ 
+                  animate={{
                     y: [0, -8, 0],
                     x: [0, -8, 0],
-                    scale: [1, 1.15, 1]
+                    scale: [1, 1.15, 1],
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 5,
                     repeat: Infinity,
                     delay: 2,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 >
                   <span className="text-lg">🥫</span>
                 </motion.div>
 
                 {/* Connecting Lines */}
-                <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.1 }}>
+                <svg
+                  className="absolute inset-0 w-full h-full"
+                  style={{ opacity: 0.1 }}
+                >
                   <motion.path
                     d="M 50% 15% L 50% 50% L 85% 50% L 50% 50% L 75% 75% L 50% 50% L 50% 85% L 50% 50% L 25% 75% L 50% 50% L 15% 50% L 50% 50% L 25% 25%"
                     stroke="var(--primary)"
@@ -257,12 +314,12 @@ const Auth = () => {
                     strokeLinecap="round"
                     strokeDasharray="10,10"
                     animate={{
-                      strokeDashoffset: [0, -100]
+                      strokeDashoffset: [0, -100],
                     }}
                     transition={{
                       duration: 20,
                       repeat: Infinity,
-                      ease: "linear"
+                      ease: "linear",
                     }}
                   />
                 </svg>
@@ -271,18 +328,19 @@ const Auth = () => {
                 <motion.div
                   className="absolute top-1/2 left-1/2 w-[300px] h-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full"
                   style={{
-                    background: "radial-gradient(circle, var(--primary) 0%, transparent 70%)",
+                    background:
+                      "radial-gradient(circle, var(--primary) 0%, transparent 70%)",
                     opacity: 0.1,
-                    filter: "blur(40px)"
+                    filter: "blur(40px)",
                   }}
                   animate={{
                     scale: [1, 1.2, 1],
-                    opacity: [0.1, 0.15, 0.1]
+                    opacity: [0.1, 0.15, 0.1],
                   }}
                   transition={{
                     duration: 6,
                     repeat: Infinity,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 />
               </motion.div>
@@ -308,7 +366,7 @@ const Auth = () => {
                     transition={{
                       duration: 2,
                       repeat: Infinity,
-                      ease: "easeInOut"
+                      ease: "easeInOut",
                     }}
                   >
                     <Users className="w-5 h-5 text-primary" />
@@ -316,7 +374,9 @@ const Auth = () => {
                   <motion.span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
                     10K+
                   </motion.span>
-                  <span className="text-sm text-muted-foreground mt-1">{t('active-users', "Active Users")}</span>
+                  <span className="text-sm text-muted-foreground mt-1">
+                    {t("active-users", "Active Users")}
+                  </span>
                 </motion.div>
 
                 {/* Secure Platform */}
@@ -334,7 +394,7 @@ const Auth = () => {
                       duration: 2,
                       repeat: Infinity,
                       ease: "easeInOut",
-                      delay: 0.3
+                      delay: 0.3,
                     }}
                   >
                     <ShieldCheck className="w-5 h-5 text-primary" />
@@ -342,7 +402,9 @@ const Auth = () => {
                   <motion.span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
                     100%
                   </motion.span>
-                  <span className="text-sm text-muted-foreground mt-1">{t('secure-platform', "Secure Platform")}</span>
+                  <span className="text-sm text-muted-foreground mt-1">
+                    {t("secure-platform", "Secure Platform")}
+                  </span>
                 </motion.div>
 
                 {/* Global Reach */}
@@ -360,7 +422,7 @@ const Auth = () => {
                       duration: 2,
                       repeat: Infinity,
                       ease: "easeInOut",
-                      delay: 0.6
+                      delay: 0.6,
                     }}
                   >
                     <Globe2 className="w-5 h-5 text-primary" />
@@ -368,10 +430,12 @@ const Auth = () => {
                   <motion.span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
                     50+
                   </motion.span>
-                  <span className="text-sm text-muted-foreground mt-1">{t('countries', "Countries")}</span>
+                  <span className="text-sm text-muted-foreground mt-1">
+                    {t("countries", "Countries")}
+                  </span>
                 </motion.div>
               </motion.div>
-              
+
               {/* Decorative Line */}
               <motion.div
                 className="mt-6 h-[1px] w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent"
@@ -393,22 +457,25 @@ const Auth = () => {
               </motion.div>
 
               {/* Switch Form Type */}
-              <motion.div 
+              <motion.div
                 className="mt-8 text-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
                 <p className="text-muted-foreground">
-                  {isRegister ? t('already-have-account', "Already have an account?") : t('dont-have-account', "Don't have an account?")}
-                  {" "}
+                  {isRegister
+                    ? t("already-have-account", "Already have an account?")
+                    : t("dont-have-account", "Don't have an account?")}{" "}
                   <motion.button
                     className="text-primary hover:text-accent transition-colors"
                     onClick={() => setIsRegister(!isRegister)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    {isRegister ? t('sign-in', "Sign In") : t('register', "Register")}
+                    {isRegister
+                      ? t("sign-in", "Sign In")
+                      : t("register", "Register")}
                   </motion.button>
                 </p>
               </motion.div>
@@ -416,7 +483,7 @@ const Auth = () => {
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

@@ -1,3 +1,4 @@
+import { useAuth, useClerk } from "@clerk/clerk-react";
 import {
   createContext,
   useContext,
@@ -90,6 +91,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<UserData | null>(null);
   const [role, setRole] = useState<UserRole>("manufacturer");
+  const { user: clerkUser, isSignedIn } = useClerk();
+  const { signOut } = useAuth();
 
   // Check if user is already logged in from localStorage
   useEffect(() => {
@@ -256,6 +259,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = (): void => {
+    signOut();
     // Clear local storage
     localStorage.removeItem("user");
 
